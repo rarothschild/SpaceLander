@@ -34,11 +34,11 @@ export class GameController {
   
     constructor(
         // Game window params
-        public readonly height = 800,
-        public readonly width = 1600,
+        public readonly height = 600,
+        public readonly width = 1000,
         // Planet props
         public readonly groundHeight = 20,
-        public readonly gravity = 0.2,
+        public readonly gravity = 0.15,
         public readonly drag = 0.1,
         // Lander props
         public readonly landerHeight = 20,
@@ -49,12 +49,15 @@ export class GameController {
         public rotateRight = false,
         public rotateLeft = false,
         public angle = 0,
-        public readonly thrust = {x:1,y:0.75},
+        public readonly thrust = {x:0.5,y:0.6},
         public readonly crashVelocity = 1000,
-        // Plateform props
+        // Platform props
         public readonly platformWidth = 50,
-        public readonly platformHeight = 50,
-        
+        public readonly platformHeight = 20,
+        public readonly platformMaxY = 700,
+        public readonly platformMinY = 100,
+        public readonly platformMaxX = 950,
+        public readonly platformMinX = 0,
     ) {}
   
     public start() {
@@ -67,17 +70,23 @@ export class GameController {
         let platform = this.createPlatform(true);
             
         this.frame = {
-            platform,
             score: 0,
             width: this.width,
             height: this.height,
             gameOver: false,
             gameStarted: false,
             lander: {
-            left: this.width / 2 - this.landerWidth / 2,
-            top: this.height - this.groundHeight - this.landerHeight,
-            width: this.landerWidth,
-            height: this.landerHeight
+                left: this.width / 2 - this.landerWidth / 2,
+                top: this.height - this.groundHeight - this.landerHeight,
+                width: this.landerWidth,
+                height: this.landerHeight
+            },
+            platform: {
+                left: this.width / 2 - this.platformWidth / 2,
+                top: this.height / 2,
+                width: this.platformWidth,
+                height: this.platformHeight,
+                show: true
             },
             velocity: 0,
             ground: {
@@ -87,6 +96,7 @@ export class GameController {
 
         this.position.x = this.frame.lander.left;
         this.position.y = this.frame.lander.top;
+
 
         return this.frame;
     }
@@ -102,7 +112,7 @@ export class GameController {
         }
         
         this.updateLanderPosition()
-
+        this.isLanded()
         return this.frame;
     }
 
@@ -144,17 +154,22 @@ export class GameController {
                 this.frame.lander.top == this.height - this.groundHeight) 
     }
   
-    private randomXYForPlatform(): number {
-      return(0)
+    private randomYForPlatform() {
+        return ({
+            X: this.platformMinX +
+            (this.platformMaxX - this.platformMinX) * Math.random(),
+            Y: this.platformMinY +
+            (this.platformMaxY - this.platformMinY) * Math.random()
+            }
+          );
     }
   
     private createPlatform(show: boolean): Platform {
-        const top = this.randomXYForPlatform();
-        const left = this.randomXYForPlatform();
+        const platformCoords = this.randomYForPlatform();
     
         return {
-            top,
-            left,
+            top: platformCoords["Y"],
+            left: platformCoords["X"],
             height: this.platformWidth,
             width: this.platformHeight,
             show,

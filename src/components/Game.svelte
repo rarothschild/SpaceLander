@@ -1,6 +1,7 @@
 <script lang="ts">
     import { GameController } from "./game";
     import Lander from './Lander.svelte';
+	import Platform from "./Platform.svelte";
 
     const game = new GameController();
     let frame = game.newGame();
@@ -105,6 +106,7 @@
     <section id="score">{frame.score}</section>
 
     <Lander lander={frame.lander} />
+    <Platform platform={frame.platform}/>
 
     {#if frame.gameOver || !frame.gameStarted}
     <section id="init-screen">
