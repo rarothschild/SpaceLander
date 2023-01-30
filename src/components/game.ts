@@ -1,3 +1,4 @@
+
 export interface Frame {
     platform: Platform;
     lander: Lander;
@@ -51,6 +52,10 @@ export class GameController {
         public angle = 0,
         public readonly thrust = {x:0.5,y:0.6},
         public readonly crashVelocity = 1000,
+        public contact = {top: false,
+                        bottom: true,
+                        left: false,
+                        right: false},
         // Platform props
         public readonly platformWidth = 50,
         public readonly platformHeight = 20,
@@ -111,6 +116,7 @@ export class GameController {
             return this.frame;
         }
         
+        this.checkContact()
         this.updateLanderPosition()
         this.isLanded()
         return this.frame;
@@ -118,19 +124,25 @@ export class GameController {
 
     public updateLanderPosition() {
         // Kinematics
-        
-        if (this.velocity.x > 0) {
-            this.velocity.x -= this.drag;
-        } else if (this.velocity.x < 0) {
-            this.velocity.x += this.drag;
+        if (this.contact.left || this.contact.right) {
+            this.velocity.x = 0;
+        } else {
+            if (this.velocity.x > 0) {
+                this.velocity.x -= this.drag;
+            } else if (this.velocity.x < 0) {
+                this.velocity.x += this.drag;
+            }
         }
         this.position.x += this.velocity.x;
-        if (!this.engineOn && this.position.y >= this.height - this.groundHeight - this.landerHeight) {
+        
+        if ( this.contact.top || (!this.engineOn && this.contact.bottom)) {
             this.velocity.y = 0;
+            this.contact.top = false;
+            this.contact.bottom = false;
         } else {
-            this.position.y -= this.velocity.y;
             this.velocity.y -= this.gravity;
         }
+        this.position.y -= this.velocity.y;
 
         // Update position
         if (this.rotateRight) this.velocity.x += this.thrust.x;
@@ -174,5 +186,22 @@ export class GameController {
             width: this.platformHeight,
             show,
         };
+    }
+
+    private checkContact() {
+        if ((this.position.y >= (this.frame.platform.top + this.platformHeight)) && 
+            this.velocity.y > 0) {
+            this.contact.top = true
+        }
+        if ((this.position.y + this.landerHeight) >= (this.height + this.groundHeight)) {
+            this.contact.bottom = true
+        }
+        if (this.position.x) {
+            this.contact.left = true
+        }
+        if (this.position.x) {
+            this.contact.right = true
+        }
+        
     }
 }
